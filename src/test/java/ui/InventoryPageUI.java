@@ -22,10 +22,6 @@ public class InventoryPageUI {
     public WebElement buttonAddToCart3() {
         return driver.findElement(By.xpath("//button[@id='add-to-cart-sauce-labs-bolt-t-shirt']"));
     }
-//
-//    public WebElement buttonAddToCart4() {
-//        return driver.findElement(By.xpath("//button[@id='add-to-cart-sauce-labs-fleece-jacket']"));
-//    }
 
     public WebElement quantityCart() {
         return  driver.findElement(By.xpath("//span[@class='shopping_cart_badge']"));

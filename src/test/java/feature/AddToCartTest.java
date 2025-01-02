@@ -1,5 +1,6 @@
 package feature;
 
+import action.Login;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -20,12 +21,7 @@ public class AddToCartTest {
     public LoginPageUI loginPageUI;
     public InventoryPageUI inventoryPageUI;
     public CartPageUI cartPageUI;
-
-    public void login() {
-        loginPageUI.inputUserName().sendKeys("standard_user");
-        loginPageUI.inputPassWord().sendKeys("secret_sauce");
-        loginPageUI.buttonLogin().click();
-    }
+    public Login login;
 
     @BeforeMethod
     public void setURL() {
@@ -37,9 +33,9 @@ public class AddToCartTest {
         loginPageUI = new LoginPageUI(driver);
         inventoryPageUI = new InventoryPageUI(driver);
         cartPageUI = new CartPageUI(driver);
+        login = new Login(driver);
 
-        login();
-
+        login.login();
     }
 
     @Test
@@ -48,7 +44,7 @@ public class AddToCartTest {
         inventoryPageUI.buttonAddToCart1().click();
         inventoryPageUI.buttonAddToCart2().click();
 
-//      Kiểm tra số lượng sản phẩm trong giỏ hàng
+//      Kiểm tra số lượng sản phẩm ở icon giỏ hàng
         String actualQuantity = inventoryPageUI.quantityCart().getText();
         Assert.assertEquals(actualQuantity, "2");
 
@@ -93,7 +89,7 @@ public class AddToCartTest {
 //      Xóa sản phẩm 2 khỏi giỏ hàng
         inventoryPageUI.removeProduct2().click();
 
-//      Kiểm tra số lượng sản phẩm trong giỏ hàng
+//      Kiểm tra số lượng sản phẩm ở icon giỏ hàng
         String actualQuantity = inventoryPageUI.quantityCart().getText();
         Assert.assertEquals(actualQuantity, "1");
 

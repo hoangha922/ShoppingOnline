@@ -1,5 +1,8 @@
 package feature;
 
+import action.AddProductToCart;
+import action.InputInformation;
+import action.Login;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -19,27 +22,10 @@ public class CheckoutStepTwoTest {
     public CartPageUI cartPageUI;
     public CheckoutStepOnePageUI checkoutStepOnePageUI;
     public CheckOutStepTwoPageUI checkOutStepTwoPageUI;
+    public Login login;
+    public AddProductToCart addProductToCart;
+    public InputInformation inputInformation;
 
-    public void login() {
-        loginPageUI.inputUserName().sendKeys("standard_user");
-        loginPageUI.inputPassWord().sendKeys("secret_sauce");
-        loginPageUI.buttonLogin().click();
-    }
-    public void addProductToCart() {
-        inventoryPageUI.buttonAddToCart1().click();
-        inventoryPageUI.buttonAddToCart2().click();
-        inventoryPageUI.buttonAddToCart3().click();
-        inventoryPageUI.shoppingCart().click();
-        cartPageUI.buttonCheckout().click();
-
-    }
-    public void inputInformation() {
-        checkoutStepOnePageUI.inputFirstName().sendKeys("Hà");
-        checkoutStepOnePageUI.inputLastName().sendKeys("Hoàng Thái");
-        checkoutStepOnePageUI.inputCode().sendKeys("A1234");
-        checkoutStepOnePageUI.buttonContinue().click();
-
-    }
 //   Chuyển đổi giá sản phẩm từ String thành Double
     private double convertToDouble(String priceString) {
         // Loại bỏ các ký tự không phải là số và dấu chấm
@@ -77,21 +63,27 @@ public class CheckoutStepTwoTest {
         cartPageUI = new CartPageUI(driver);
         checkoutStepOnePageUI = new CheckoutStepOnePageUI(driver);
         checkOutStepTwoPageUI = new CheckOutStepTwoPageUI(driver);
+        login = new Login(driver);
+        addProductToCart = new AddProductToCart(driver);
+        inputInformation = new InputInformation(driver);
 
-        login();
-        addProductToCart();
-        inputInformation();
+        login.login();
+        addProductToCart.addProductToCart();
+        inputInformation.inputInformation();
     }
 
     @Test
     public void checkInformationProduct1() {
+//        Kiểm tra tên sản phẩm 1
         String nameProduct1 = checkOutStepTwoPageUI.nameProduct1().getText();
         String nameProduct1Inventory = inventoryPageUI.nameProduct1().getText();
         Assert.assertEquals(nameProduct1, nameProduct1Inventory);
 
+//        Kiểm tra số lượng sản phẩm 1
         String quantityProduct1 = checkOutStepTwoPageUI.quantityProduct1().getText();
         Assert.assertEquals(quantityProduct1, "1");
 
+//        Kiểm tra giá sản phẩm 1
         String priceProduct1 = checkOutStepTwoPageUI.priceProduct1().getText();
         String priceProduct1Inventory = inventoryPageUI.priceProduct1().getText();
         Assert.assertEquals(priceProduct1, priceProduct1Inventory);
@@ -127,6 +119,7 @@ public class CheckoutStepTwoTest {
 
     @Test
     public void checkPriceTotal() {
+//        Kiểm tra tổng tiền 3 sản phầm trước thuế
         String itemTotal = checkOutStepTwoPageUI.itemTotal().getText();
         double numberItemTotal = convertToDouble(itemTotal);
 
@@ -137,6 +130,7 @@ public class CheckoutStepTwoTest {
 
     @Test
     public void checkTax() {
+//        Kiểm tra tiền thuế
         String tax = checkOutStepTwoPageUI.tax().getText();
         double numberTax = convertToDouble(tax);
 
@@ -147,6 +141,7 @@ public class CheckoutStepTwoTest {
 
     @Test
     public void checkTotal() {
+//        Kiểm tra tổng tiền 3 sản phầm
         String total = checkOutStepTwoPageUI.total().getText();
         double numberTotal = convertToDouble(total);
 

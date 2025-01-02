@@ -1,5 +1,7 @@
 package feature;
 
+import action.AddProductToCart;
+import action.Login;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -9,8 +11,11 @@ import ui.CartPageUI;
 import ui.CheckoutStepOnePageUI;
 import ui.InventoryPageUI;
 import ui.LoginPageUI;
+import utils.ExcelUtils;
 
 import java.time.Duration;
+import java.util.List;
+import java.util.Map;
 
 public class CheckoutStepOneTest {
     WebDriver driver;
@@ -19,19 +24,8 @@ public class CheckoutStepOneTest {
     public InventoryPageUI inventoryPageUI;
     public CartPageUI cartPageUI;
     public CheckoutStepOnePageUI checkoutStepOnePageUI;
-
-    public void login() {
-        loginPageUI.inputUserName().sendKeys("standard_user");
-        loginPageUI.inputPassWord().sendKeys("secret_sauce");
-        loginPageUI.buttonLogin().click();
-    }
-    public void addProductToCart() {
-        inventoryPageUI.buttonAddToCart1().click();
-        inventoryPageUI.buttonAddToCart2().click();
-        inventoryPageUI.buttonAddToCart3().click();
-        inventoryPageUI.shoppingCart().click();
-        cartPageUI.buttonCheckout().click();
-    }
+    public Login login;
+    public AddProductToCart addProductToCart;
 
     @BeforeMethod
     public void setURL() {
@@ -44,47 +38,82 @@ public class CheckoutStepOneTest {
         inventoryPageUI = new InventoryPageUI(driver);
         cartPageUI = new CartPageUI(driver);
         checkoutStepOnePageUI = new CheckoutStepOnePageUI(driver);
+        login = new Login(driver);
+        addProductToCart = new AddProductToCart(driver);
 
-        login();
-        addProductToCart();
-
+        login.login();
+        addProductToCart.addProductToCart();
     }
 
-    @Test
-    public void inputInformationSuccessful() {
-        checkoutStepOnePageUI.inputFirstName().sendKeys("Hà");
-        checkoutStepOnePageUI.inputLastName().sendKeys("Hoàng Thái");
-        checkoutStepOnePageUI.inputCode().sendKeys("A1234");
+    @DataProvider(name = "demoData")
+    public Object[][] provideTestData() {
+        String excelFilePath = "inputInformation.xlsx";
+        String sheetName = "Sheet1";
+
+        try {
+            // Đọc dữ liệu từ file Excel
+            List<Map<String, String>> excelData = ExcelUtils.readExcelData(excelFilePath, sheetName);
+
+            // Chuyển đổi danh sách Map thành mảng 2 chiều
+            Object[][] data = new Object[excelData.size()][1];
+            for (int i = 0; i < excelData.size(); i++) {
+                data[i][0] = excelData.get(i);
+            }
+            return data;
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("Lỗi đọc tệp Excel: " + e.getMessage());
+        }
+    }
+
+    public void fillForm(Map<String, String> rowData) {
+        try {
+            checkoutStepOnePageUI.inputFirstName().sendKeys(rowData.get("First Name"));
+            checkoutStepOnePageUI.inputLastName().sendKeys(rowData.get("Last Name"));
+            checkoutStepOnePageUI.inputCode().sendKeys(rowData.get("Zip/Postal Code"));
+
+        } catch (Exception e) {
+            throw new RuntimeException("Lỗi khi điền form: " + e.getMessage());
+        }
+    }
+
+    @Test(dataProvider = "demoData")
+    public void testInformationSuccessful(Map<String, String> rowData) {
+        fillForm(rowData);
         checkoutStepOnePageUI.buttonContinue().click();
     }
 
-    @Test
-    public void inputFirstNameNull() {
-        checkoutStepOnePageUI.inputFirstName().sendKeys("");
-        checkoutStepOnePageUI.inputLastName().sendKeys("Hoàng Thái");
-        checkoutStepOnePageUI.inputCode().sendKeys("A1234");
+    @Test(dataProvider = "demoData")
+    public void testContinueNull(Map<String, String> rowData) {
         checkoutStepOnePageUI.buttonContinue().click();
+    }
+
+    @Test(dataProvider = "demoData")
+    public void testFirstNameNull(Map<String, String> rowData) {
+        rowData.put("First Name", "");
+        fillForm(rowData);
+        checkoutStepOnePageUI.buttonContinue().click();
+
         String error = checkoutStepOnePageUI.errorMessage().getText();
         Assert.assertEquals(error, "Error: First Name is required");
-
     }
 
-    @Test
-    public void inputLastNameNull() {
-        checkoutStepOnePageUI.inputFirstName().sendKeys("Hà");
-        checkoutStepOnePageUI.inputLastName().sendKeys("");
-        checkoutStepOnePageUI.inputCode().sendKeys("A1234");
+    @Test(dataProvider = "demoData")
+    public void testLastNameNull(Map<String, String> rowData) {
+        rowData.put("Last Name", "");
+        fillForm(rowData);
         checkoutStepOnePageUI.buttonContinue().click();
+
         String error = checkoutStepOnePageUI.errorMessage().getText();
         Assert.assertEquals(error, "Error: Last Name is required");
     }
 
-    @Test
-    public void inputZipCodeNull() {
-        checkoutStepOnePageUI.inputFirstName().sendKeys("Hà");
-        checkoutStepOnePageUI.inputLastName().sendKeys("Hoàng Thái");
-        checkoutStepOnePageUI.inputCode().sendKeys("");
+    @Test(dataProvider = "demoData")
+    public void testZipCodeNull(Map<String, String> rowData) {
+        rowData.put("Zip/Postal Code", "");
+        fillForm(rowData);
         checkoutStepOnePageUI.buttonContinue().click();
+
         String error = checkoutStepOnePageUI.errorMessage().getText();
         Assert.assertEquals(error, "Error: Postal Code is required");
     }
@@ -93,4 +122,5 @@ public class CheckoutStepOneTest {
     public void tearDown() {
         driver.quit();
     }
+
 }
